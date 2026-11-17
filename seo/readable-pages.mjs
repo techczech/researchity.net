@@ -1,8 +1,10 @@
+import { citationHead, citeBlockHtml } from './kit/citation.mjs';
 // Route list -> page records -> HTML, sitemap and 404 writers, plus the Vite plugin that runs them.
 import fs from 'node:fs';
 import path from 'node:path';
 
 const HEAD_TAG_PATTERNS = [
+  /<meta\b[^>]*name="(?:citation_[^"]*|DC\.[^"]*)"[^>]*>\s*/gi,
   /<title>[\s\S]*?<\/title>\s*/gi,
   /<meta\s+name="description"[^>]*>\s*/gi,
   /<meta\s+name="robots"[^>]*>\s*/gi,
@@ -22,11 +24,11 @@ export const headTags = (page, origin, siteName) => {
     `<meta name="description" content="${escapeHtml(page.description)}" />`,
     page.noindex ? '<meta name="robots" content="noindex" />' : null,
     `<link rel="canonical" href="${escapeHtml(url)}" />`,
-    `<meta property="og:title" content="${escapeHtml(page.title)}" />`,
+    citationHead({ title: page.title, url, site: siteName, authors: ['Dominik Lukeš'] }),
     `<meta property="og:description" content="${escapeHtml(page.description)}" />`,
-    `<meta property="og:url" content="${escapeHtml(url)}" />`,
+
     `<meta property="og:type" content="website" />`,
-    `<meta property="og:site_name" content="${escapeHtml(siteName)}" />`,
+
   ].filter(Boolean);
   return lines.join('\n    ');
 };
@@ -41,7 +43,9 @@ export const renderPageHtml = (template, page, bodyHtml, { origin, siteName }) =
     ? html.replace(/(<meta\s+name="viewport"[^>]*>)/i, (m) => `${m}\n    ${tags}`)
     : html.replace(/<head>/i, () => `<head>\n    ${tags}`);
   if (!/<div id="root"><\/div>/.test(html)) throw new Error('template has no empty <div id="root"></div>');
-  return html.replace('<div id="root"></div>', () => `<div id="root">${bodyHtml}</div>`);
+  const citation = citeBlockHtml({ title: page.title, url: pageUrl(origin, page.path), site: siteName, authors: ['Dominik Lukeš'] });
+  const body = bodyHtml.includes('aria-label="Cite this page"') ? bodyHtml : bodyHtml.includes('</footer>') ? bodyHtml.replace('</footer>', citation + '</footer>') : bodyHtml.replace('</main>', citation + '</main>');
+  return html.replace('<div id="root"></div>', () => `<div id="root">${body}</div>`);
 };
 
 // Plain page with no app script, served with status 404 by the Express server.

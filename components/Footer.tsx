@@ -1,3 +1,4 @@
+import { PageCitation } from './PageCitation';
 import React from 'react';
 import { ExternalLink } from 'lucide-react';
 
@@ -52,6 +53,7 @@ export const Footer: React.FC = () => {
             </p>
           </div>
         </div>
+        <PageCitation />
       </div>
     </footer>
   );

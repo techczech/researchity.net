@@ -1,3 +1,4 @@
+import { applyCitation } from './seo/kit/citation';
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
@@ -8,7 +9,7 @@ import { Roles } from './pages/Roles';
 import { Uses } from './pages/Uses';
 import { Tools } from './pages/Tools';
 import { About } from './pages/About';
-import { pageForPath, SITE_ORIGIN } from './data/seo';
+import { pageForPath, SITE_ORIGIN, SITE_NAME } from './data/seo';
 
 // Keeps title, description, canonical and og tags in step with the client-side route.
 const PageMeta: React.FC = () => {
@@ -27,6 +28,7 @@ const PageMeta: React.FC = () => {
       el.setAttribute(tag === 'link' ? 'href' : 'content', value);
     };
     document.title = page.title;
+    applyCitation({ title: page.title, url, site: SITE_NAME, authors: ['Dominik Lukeš'] });
     setMeta('meta[name="description"]', 'name', 'description', page.description);
     setMeta('link[rel="canonical"]', 'rel', 'canonical', url, 'link');
     setMeta('meta[property="og:title"]', 'property', 'og:title', page.title);
